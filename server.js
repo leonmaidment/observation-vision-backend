@@ -1,4 +1,4 @@
-require('dotenv').config();
+65require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -94,6 +94,27 @@ async function callOpenAIVision(imageBase64, prompt = null) {
   }
 }
 
+// Call Zapier webhook
+async function callZapierWebhook(imageUrl, observationId, aiDescription) {
+  const zapierWebhookUrl = 'https://hooks.zapier.com/hooks/catch/25621671/uf4yo46/';
+  
+  try {
+    const response = await axios.post(zapierWebhookUrl, {
+      image_url: imageUrl,
+      observation_id: observationId,
+      ai_description: aiDescription,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log('Zapier webhook called successfully');
+    return { success: true, zapierResponse: response.data };
+  } catch (error) {
+    console.error('Error calling Zapier webhook:', error.message);
+    // Don't throw - we want to continue even if Zapier fails
+    return { success: false, error: error.message };
+  }
+}
+
 // Routes
 
 // Health check
@@ -148,6 +169,13 @@ app.post('/api/process-base64', async (req, res) => {
     console.log('Processing base64 image from Bubble');
 
     const result = await callOpenAIVision(cleanBase64, prompt);
+
+        // Call Zapier webhook asynchronously (don't wait for it)
+    if (req.body.imageUrl && req.body.observationId) {
+      callZapierWebhook(req.body.imageUrl, req.body.observationId, result.description).catch(err => {
+        console.error('Background Zapier call failed:', err);
+      });
+    }
 
     res.json({
       success: true,

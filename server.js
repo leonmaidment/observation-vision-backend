@@ -1,4 +1,5 @@
-65require('dotenv').config();
+175
+  65require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -171,8 +172,8 @@ app.post('/api/process-base64', async (req, res) => {
     const result = await callOpenAIVision(cleanBase64, prompt);
 
         // Call Zapier webhook asynchronously (don't wait for it)
-    if (req.body.imageUrl && req.body.observationId) {
-      callZapierWebhook(req.body.imageUrl, req.body.observationId, result.description).catch(err => {
+    if (req.body.image_url && req.body.observation_id) {
+      callZapierWebhook(req.body.image_url, req.body.observation_id, result.description).catch(err => {
         console.error('Background Zapier call failed:', err);
       });
     }

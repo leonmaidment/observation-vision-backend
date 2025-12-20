@@ -107,8 +107,7 @@ async function callZapierWebhook(imageUrl, observationId, aiDescription) {
     });
     
     console.log('Zapier webhook called successfully');
-    return { success: true, zapierResponse: response.data };
-  } catch (error) {
+return { success: true, zapierResponse: response.data, ai_description: response.data?.choices?.[0]?.message?.content || '' };  } catch (error) {
     console.error('Error calling Zapier webhook:', error.message);
     // Don't throw - we want to continue even if Zapier fails
     return { success: false, error: error.message };
